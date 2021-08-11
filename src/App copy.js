@@ -1,16 +1,26 @@
-import React from 'react';
-import { Switch, Route } from 'react-router-dom';
-import { connect } from 'react-redux';
 
+
+import React from 'react';
+import { Switch, Route, Redirect } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import {selectUser}from "./redux/user/user.selectors";
 import './App.css';
 
 import HomePage from './pages/homepage/homepage.component';
 import ShopPage from './pages/shop/shop.component';
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
+import CheckoutPage from './redux/checkout/checkout.component';
+
 import Header from './components/header/header.component'
-import { render } from '@testing-library/react';
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+
+
+import { auth, createUserProfileDocument, addCollectionAndDocuments } from './firebase/firebase.utils';
+
 import { setCurrentUser } from './redux/user/user.actions';
+import { selectCurrentUser } from './redux/user/user.selectors';
+import {selectCollectionsForPreview} from './redux/shop/shop.selectors'
+
 
 // ! discuss a little more detail of what is going on here
 // todo: compnent -  will be the compnent that we wnat to render
@@ -36,7 +46,7 @@ import { setCurrentUser } from './redux/user/user.actions';
       // * it wall call it so we don't actually have to manually fetch every time we want to check if that state has changed
         // !  discuss with carlos in regrds to the fetching
     componentDidMount(){
-      const { setCurrentUser } = this.props;
+      const { setCurrentUser, collectionsArray } = this.props;
       // todo: onAuthStateChanged() - this is a method on the auth library that we get from firebase
       this.unsubscribeFromAuth=auth.onAuthStateChanged(async userAuth=>{
         // * we are checking here if the user is actually signed in
@@ -54,6 +64,7 @@ import { setCurrentUser } from './redux/user/user.actions';
         }
       // ! discuss with carlos what is going on here
         setCurrentUser(userAuth)
+        addCollectionAndDocuments('collections', collectionsArray.map(({title,items})=>({title, items})))
       })
     }
     // *we want to close this subscription whenever our ocmponent un mounts 
@@ -73,12 +84,29 @@ import { setCurrentUser } from './redux/user/user.actions';
           <Route exact path='/' component={HomePage}/>
           {/* this will take us to our shop page */}
           <Route path='/shop' component={ShopPage} />
-          <Route path='/signin' component={SignInAndSignUpPage} />
+          <Route exact path='/Checkout' component={CheckoutPage} />
+          <Route 
+            exact
+            path='/signin'
+            // *after signing in, this will redirect us to the mainpage until we sign out
+            render={() =>
+              this.props.currentUser ? (
+                <Redirect to='/' />
+              ) : (
+                <SignInAndSignUpPage />
+              )
+            }
+          />
         </Switch>  
         </div>
       );
     }
   }
+// * we are returning our current user prop which is equal to our current user
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectUser,
+  collectionsArray: selectCollectionsForPreview
+});
   // todo:  dispatch - is a way for Redux to know that whatever you're passing me/object you're passing me, it is going to be an action object taht i'm going to pass to every producer
   const mapDispatchToProps = dispatch => ({
     // *by passin in user, we are invoking current user with the user that will then be used as the payload
@@ -86,12 +114,8 @@ import { setCurrentUser } from './redux/user/user.actions';
   })
   
 
-export default connect(null,mapDispatchToProps)(App)
+  export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(App);
 
-// *we took out this because we wanted to show an example for linking and routing
-// const HatsPage=()=>(
-//   <div>
-//     <h1>HATS PAGE</h1>
-//   </div>
-
-// )

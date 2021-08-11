@@ -13,48 +13,56 @@ const config = {
     appId: "1:415703578570:web:04c28bebe22d6239750133",
     measurementId: "G-5NRY9QXP7E"
   };
-  // * we are passing our user object that we get from the library and pass in any additioal data that we will need
-  // *if the snapshot doesn't exist, we will be creating the data in the try{} aka a nwe user
-  //* we will then return our userRef, because there's a chance that we want ot use this uers referce, object to do other things
-  // ! discuss with carlos in more detail what is going on.  
-  export const createUsersProfileDocument = async(userAuth, additionalData) =>{
-    // if user object does not exist.  we don't want to do anything else.  we want to exit from this function
-    if (!userAuth) return;
+  firebase.initializeApp(config);
 
-    const userRef = firestore.doc(`users/${userAuth.uid}`);
-  
-    const snapShot = await userRef.get();
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
 
-    if (!snapShot.exists) {
-      const { displayName, email } = userAuth;
-      const createdAt = new Date();
-      try {
-        await userRef.set({
-          displayName,
-          email,
-          createdAt,
-          ...additionalData
-        });
-      } catch (error) {
-        console.log('error creating user', error.message);
-      }
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+
+  const snapShot = await userRef.get();
+
+  if (!snapShot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData
+      });
+    } catch (error) {
+      console.log('error creating user', error.message);
     }
+  }
 
-    return userRef;
-  };
+  return userRef;
+};
+// *this will put the collction on firebase
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+  const collectionRef = firestore.collection(collectionKey)
+    // console.log(collectionRef)
+    // todo: If you do not need to read any documents in your operation set, 
+    // todo: you can execute multiple write operations as a single batch that contains any combination of set(), update(), or delete() operations. 
+    // todo: A batch of writes completes atomically and can write to multiple documents.
+    const batch = firestore.batch()
+    objectsToAdd.forEach(obj=>{
+      // todo: doc()  adds a new document
+      // * in this case give me a new document ref in this collection and randomly gnenerate an ID for me
+      const newDocRef = collectionRef.doc()
+      // console.log(newDocRef)
+      batch.set(newDocRef, obj)
+    })
 
-  
+    return await batch.commit()
+}
 
+export const auth = firebase.auth();
+export const firestore = firebase.firestore();
 
-  firebase.initializeApp(config)
+const provider = new firebase.auth.GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+export const signInWithGoogle = () => auth.signInWithPopup(provider);
 
-
-  // *we wil export this out for anything that needs authentication
-  export const auth = firebase.auth()
-  export const firestore = firebase.firestore()
-
-  const provider = new firebase.auth.GoogleAuthProvider()
-  provider.setCustomParameters({ prompt: 'select_account' });
-  export const signInWithGoogle = () => auth.signInWithPopup(provider);
-  
-  export default firebase;
+export default firebase;

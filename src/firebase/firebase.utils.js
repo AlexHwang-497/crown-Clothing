@@ -40,10 +40,22 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   return userRef;
 };
 // *this will put the collction on firebase
-export const addCollectionAndDocuments = (collectionKey, objectsToAdd) => {
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
   const collectionRef = firestore.collection(collectionKey)
     // console.log(collectionRef)
+    // todo: If you do not need to read any documents in your operation set, 
+    // todo: you can execute multiple write operations as a single batch that contains any combination of set(), update(), or delete() operations. 
+    // todo: A batch of writes completes atomically and can write to multiple documents.
     const batch = firestore.batch()
+    objectsToAdd.forEach(obj=>{
+      // todo: doc()  adds a new document
+      // * in this case give me a new document ref in this collection and randomly gnenerate an ID for me
+      const newDocRef = collectionRef.doc()
+      // console.log(newDocRef)
+      batch.set(newDocRef, obj)
+    })
+
+    return await batch.commit()
 }
 
 export const auth = firebase.auth();

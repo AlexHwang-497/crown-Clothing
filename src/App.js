@@ -4,7 +4,7 @@ import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-
+import {selectUser}from "./redux/user/user.selectors";
 import './App.css';
 
 import HomePage from './pages/homepage/homepage.component';
@@ -15,11 +15,11 @@ import CheckoutPage from './redux/checkout/checkout.component';
 import Header from './components/header/header.component'
 
 
-import { auth, createUserProfileDocument, addCollectionAndDocuments } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 
 import { setCurrentUser } from './redux/user/user.actions';
 import { selectCurrentUser } from './redux/user/user.selectors';
-import {selectCollectionsForPreview} from './redux/shop/shop.selectors'
+
 
 
 // ! discuss a little more detail of what is going on here
@@ -46,7 +46,7 @@ import {selectCollectionsForPreview} from './redux/shop/shop.selectors'
       // * it wall call it so we don't actually have to manually fetch every time we want to check if that state has changed
         // !  discuss with carlos in regrds to the fetching
     componentDidMount(){
-      const { setCurrentUser, collectionsArray } = this.props;
+      const { setCurrentUser } = this.props;
       // todo: onAuthStateChanged() - this is a method on the auth library that we get from firebase
       this.unsubscribeFromAuth=auth.onAuthStateChanged(async userAuth=>{
         // * we are checking here if the user is actually signed in
@@ -64,7 +64,7 @@ import {selectCollectionsForPreview} from './redux/shop/shop.selectors'
         }
       // ! discuss with carlos what is going on here
         setCurrentUser(userAuth)
-        addCollectionAndDocuments('collections', collectionsArray)
+        
       })
     }
     // *we want to close this subscription whenever our ocmponent un mounts 
@@ -103,10 +103,10 @@ import {selectCollectionsForPreview} from './redux/shop/shop.selectors'
     }
   }
 // * we are returning our current user prop which is equal to our current user
-  const mapStateToProps =({user}) => ({
-    currentUser:user.currentUser,
-    collectionsArray:selectCollectionsForPreview
-  })
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectUser,
+  
+});
   // todo:  dispatch - is a way for Redux to know that whatever you're passing me/object you're passing me, it is going to be an action object taht i'm going to pass to every producer
   const mapDispatchToProps = dispatch => ({
     // *by passin in user, we are invoking current user with the user that will then be used as the payload
