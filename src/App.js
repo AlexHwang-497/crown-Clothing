@@ -1,8 +1,4 @@
-// *asdfsdfasdfasdf this is a testasdasdfadsfasfasdfasdfasdf
-//!! asdf;lajdsflakjsdfl;akjds;lfajksd;lfjsadl;fjasl;dfj
-//!! asdf;lajdsflakjsdfl;akjds;lfajksd;lfjsadl;fjasl;dfj
-//!! asdf;lajdsflakjsdfl;akjds;lfajksd;lfjsadl;fjasl;dfj
-//!! asdf;lajdsflakjsdfl;akjds;lfajksd;lfjsadl;fjasl;dfj
+
 
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
