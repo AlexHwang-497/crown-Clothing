@@ -3,16 +3,17 @@ import { createSelector } from 'reselect';
 
 const selectShop = state => state.shop;
 
-
 export const selectCollections = createSelector(
   [selectShop],
   shop => shop.collections
 );
-// ! wher edoes select collectinos come from
+
 export const selectCollectionsForPreview = createSelector(
   [selectCollections],
-  collections => Object.keys(collections).map(key => collections[key])
+  collections =>
+    collections ? Object.keys(collections).map(key => collections[key]) : []
 );
+
 
 // * this function is involved with getting our collection id so we can go to their correct pages aka a hats page or a jackets page forex.
   // * we are finding collection.id matching the url parameter of our collection id map
@@ -22,7 +23,7 @@ export const selectCollection = collectionUrlParam =>
     // * we don't need to use this function anymore because we changed the shop database format
     // collections => collections.find(collection => collection.id===COLLECTION_ID_MAP[collectionUrlParam])
     // *we are able to use this due to the new changes in our database
-    collections => collections[collectionUrlParam]
+    collections => (collections ? collections[collectionUrlParam] : null)
   );
 
 // *since we changed our database, we don't need this format anymore
