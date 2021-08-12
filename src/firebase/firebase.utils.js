@@ -69,6 +69,11 @@ export const convertCollectionsSnapshotToMap =(collections)=>{
       items,
     }
   })
+  // ! how can we find the data to view? on this on the console
+  return transformedCollection.reduce((accumulator,collection)=>{
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator
+  },{})
 
 }
 
